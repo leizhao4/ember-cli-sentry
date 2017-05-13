@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import Raven from 'raven';
 
 const {
   RSVP,
@@ -16,7 +17,7 @@ const {
  * @module ember-cli-sentry/services/raven
  * @extends Ember.Service
  */
-let RavenService = Service.extend({
+export default Service.extend({
 
   /**
    * Global error catching definition status
@@ -46,7 +47,7 @@ let RavenService = Service.extend({
    * @type Ember.ComputedProperty
    */
   isRavenUsable: computed(function() {
-    return !!(window.Raven && window.Raven.isSetup() === true);
+    return Raven.isSetup() === true;
   }).volatile(),
 
   /**
@@ -58,7 +59,7 @@ let RavenService = Service.extend({
    */
   captureException(error) {
     if (this.get('isRavenUsable')) {
-      window.Raven.captureException(...arguments);
+      Raven.captureException(...arguments);
     } else {
       throw error;
     }
@@ -73,7 +74,7 @@ let RavenService = Service.extend({
    */
   captureMessage(message) {
     if (this.get('isRavenUsable')) {
-      window.Raven.captureMessage(...arguments);
+      Raven.captureMessage(...arguments);
     } else {
       throw new Error(message);
     }
@@ -192,7 +193,7 @@ let RavenService = Service.extend({
   callRaven(methodName, ...optional) {
     if (this.get('isRavenUsable')) {
       try {
-        return window.Raven[methodName].call(window.Raven, ...optional);
+        return Raven[methodName].call(Raven, ...optional);
       } catch (error) {
         this.captureException(error);
         return false;
@@ -200,5 +201,3 @@ let RavenService = Service.extend({
     }
   }
 });
-
-export default RavenService;
